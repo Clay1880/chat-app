@@ -30,7 +30,7 @@ export default function GuestLogin() {
   return (
     <div className="flex w-full h-full items-center justify-center bg-slate-50">
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-sm border border-slate-100">
-        <h2 className="text-3xl font-bold mb-2 text-slate-900">Welcome to Chat</h2>
+        <h2 className="text-3xl font-bold mb-2 text-slate-900">Welcome to ChatX</h2>
         <p className="text-slate-500 mb-8">Enter a guest username to join the room.</p>
         
         <form onSubmit={handleJoin} className="space-y-4">
