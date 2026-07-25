@@ -15,7 +15,7 @@ export default function Home() {
       ) : (
         <div className="flex h-full flex-col items-center justify-center gap-4">
            <h1 className="text-3xl font-bold">Welcome to the network, {currentUser.name}!</h1>
-           <p className="text-slate-500">The chat interface is under construction...</p>
+           <p className="text-slate-500">The chat interface is under construction by the developer</p>
         </div>
       )}
     </main>
