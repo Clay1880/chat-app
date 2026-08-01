@@ -1,7 +1,8 @@
 'use client';
 
 import { useChatStore } from '../src/store/useChatStore';
-import GuestLogin from '../src/features/auth/GuestLogin';
+import LandingPage from '../src/features/landing/LandingPage';
+import ChatContainer from '../src/features/chat/ChatContainer';
 import { useSocket } from '../src/hooks/useSocket';
 
 export default function Home() {
@@ -9,15 +10,8 @@ export default function Home() {
   useSocket();
 
   return (
-    <main className="h-screen w-screen overflow-hidden bg-slate-50 font-sans text-slate-900 antialiased">
-      {!currentUser ? (
-        <GuestLogin />
-      ) : (
-        <div className="flex h-full flex-col items-center justify-center gap-4">
-           <h1 className="text-3xl font-bold">Welcome to the network, {currentUser.name}!</h1>
-           <p className="text-slate-500">The chat interface is under construction by the developer</p>
-        </div>
-      )}
+    <main className="h-screen w-screen overflow-x-hidden bg-slate-950 font-sans text-slate-100 antialiased">
+      {!currentUser ? <LandingPage /> : <ChatContainer />}
     </main>
   );
 }
