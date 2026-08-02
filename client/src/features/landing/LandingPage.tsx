@@ -6,6 +6,7 @@ import { socket } from '../../lib/socketClient';
 
 export default function LandingPage() {
   const [username, setUsername] = useState('');
+  const [gender, setGender] = useState<'male' | 'female'>('male');
   const [isJoining, setIsJoining] = useState(false);
 
   const setCurrentUser = useChatStore((state) => state.setCurrentUser);
@@ -23,12 +24,13 @@ export default function LandingPage() {
     const newUser = {
       id: crypto.randomUUID(),
       name: trimmed,
+      gender,
       isGuest: true,
     };
 
     setCurrentUser(newUser);
     socket.connect();
-    socket.emit('register_user', newUser.name);
+    socket.emit('register_user', { name: newUser.name, gender: newUser.gender, id: newUser.id });
 
     setTimeout(() => {
       setIsJoining(false);
@@ -105,6 +107,38 @@ export default function LandingPage() {
                 className="w-full bg-slate-950 border border-slate-800 text-white placeholder-slate-500 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
                 autoFocus
               />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                Select Gender
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setGender('male')}
+                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border font-semibold text-sm transition-all cursor-pointer ${
+                    gender === 'male'
+                      ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-md shadow-blue-500/10 ring-2 ring-blue-500/30'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  <span className="text-base font-bold text-blue-400">♂</span>
+                  <span>Male</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender('female')}
+                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border font-semibold text-sm transition-all cursor-pointer ${
+                    gender === 'female'
+                      ? 'bg-pink-600/20 border-pink-500 text-pink-400 shadow-md shadow-pink-500/10 ring-2 ring-pink-500/30'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  <span className="text-base font-bold text-pink-400">♀</span>
+                  <span>Female</span>
+                </button>
+              </div>
             </div>
 
             <button

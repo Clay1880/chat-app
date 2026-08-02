@@ -19,15 +19,17 @@ const io = new Server(httpServer, {
 interface UserSession {
   id: string; // socket.id or user assigned id
   name: string;
+  gender: 'male' | 'female';
 }
 
 // Map socket.id -> UserSession
 const activeUsers = new Map<string, UserSession>();
 
 const broadcastUsers = () => {
-  const usersList: [string, string][] = Array.from(activeUsers.entries()).map(([socketId, user]) => [
+  const usersList: [string, string, 'male' | 'female'][] = Array.from(activeUsers.entries()).map(([socketId, user]) => [
     socketId,
     user.name,
+    user.gender || 'male',
   ]);
   io.emit('users_updated', usersList);
 };
@@ -35,8 +37,9 @@ const broadcastUsers = () => {
 io.on('connection', (socket) => {
   console.log(`🔌 New client connected: ${socket.id}`);
 
-  socket.on('register_user', (userData: string | { id?: string; name: string }) => {
+  socket.on('register_user', (userData: string | { id?: string; name: string; gender?: 'male' | 'female' }) => {
     const rawName = typeof userData === 'string' ? userData : userData.name;
+    const gender: 'male' | 'female' = typeof userData === 'object' && userData.gender === 'female' ? 'female' : 'male';
     const userName = rawName ? rawName.trim() : '';
 
     if (!userName) {
@@ -60,17 +63,19 @@ io.on('connection', (socket) => {
     activeUsers.set(socket.id, {
       id: userId,
       name: userName,
+      gender,
     });
 
-    console.log(`👤 User registered: ${userName} (${socket.id})`);
+    console.log(`👤 User registered: ${userName} (${gender}) (${socket.id})`);
     // Confirm successful registration to client
-    socket.emit('registration_success', { name: userName });
+    socket.emit('registration_success', { name: userName, gender });
     broadcastUsers();
   });
 
   socket.on('send_message', (payload: { text: string; recipientId?: string }) => {
     const sender = activeUsers.get(socket.id);
     const senderName = sender ? sender.name : 'Anonymous';
+    const senderGender = sender ? sender.gender : 'male';
     const recipientId = payload.recipientId || 'public';
 
     if (recipientId !== 'public') {
@@ -90,6 +95,7 @@ io.on('connection', (socket) => {
       text: payload.text,
       senderId: socket.id,
       senderName,
+      senderGender,
       recipientId,
       timestamp: Date.now(),
     };

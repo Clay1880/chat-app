@@ -32,10 +32,11 @@ export const useSocket = () => {
       setOfflineError(payload.text);
     });
 
-    socket.on('users_updated', (usersArray: [string, string][]) => {
-      const formattedUsers = usersArray.map(([id, name]) => ({
+    socket.on('users_updated', (usersArray: [string, string, ('male' | 'female')?][]) => {
+      const formattedUsers = usersArray.map(([id, name, gender]) => ({
         id,
         name,
+        gender: gender || 'male',
         isGuest: true,
       }));
 

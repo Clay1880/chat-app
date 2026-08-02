@@ -82,14 +82,19 @@ export default function ChatContainer() {
   const isRecipientOnline = !isDirectMessage || !!activeUserObj;
   const chatTitle = activeChat === 'public' ? '# General' : `@ ${activeUserObj?.name || 'Direct Message'}`;
 
-  // Standard 'G' Avatar for everyone
-  const renderAvatar = (isSmall: boolean = true) => {
+  // Avatar helper with gender styling (Blue for male, Pink for female)
+  const renderAvatar = (gender: 'male' | 'female' = 'male', isSmall: boolean = true) => {
     const dimensions = isSmall ? 'w-7 h-7 text-xs' : 'w-9 h-9 text-sm';
+    const bg =
+      gender === 'female'
+        ? 'bg-gradient-to-tr from-pink-600 to-rose-500 border-pink-400/40 text-white shadow-pink-500/20'
+        : 'bg-gradient-to-tr from-blue-600 to-cyan-500 border-blue-400/40 text-white shadow-blue-500/20';
+    const symbol = gender === 'female' ? '♀' : '♂';
     return (
       <div
-        className={`${dimensions} rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 border border-indigo-400/40 font-black flex items-center justify-center text-white shadow-sm shrink-0`}
+        className={`${dimensions} rounded-full ${bg} border font-bold flex items-center justify-center shadow-sm shrink-0`}
       >
-        G
+        {symbol}
       </div>
     );
   };
@@ -164,6 +169,8 @@ export default function ChatContainer() {
                 const isSelf = user.id === socket.id || user.name === currentUser?.name;
                 const isActive = activeChat === user.id;
                 const unreadCount = unreadChats[user.id] || 0;
+                const isFemale = user.gender === 'female';
+                const nameColorClass = isFemale ? 'text-pink-400 font-bold' : 'text-blue-400 font-bold';
 
                 return (
                   <button
@@ -177,15 +184,17 @@ export default function ChatContainer() {
                         ? 'bg-indigo-600/90 text-white shadow-md shadow-indigo-600/30'
                         : unreadCount > 0
                         ? 'bg-slate-900 border border-indigo-500/40 text-white shadow-sm'
-                        : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                        : 'text-slate-300 hover:bg-slate-800/60'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
                       <div className="relative">
-                        {renderAvatar(true)}
+                        {renderAvatar(user.gender, true)}
                         <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-slate-950"></span>
                       </div>
-                      <span className="truncate font-medium">{user.name}</span>
+                      <span className={`truncate ${isActive ? 'text-white font-bold' : nameColorClass}`}>
+                        {user.name}
+                      </span>
                     </div>
 
                     {/* Unread Indicator Badge / Dot */}
@@ -212,11 +221,14 @@ export default function ChatContainer() {
       {/* User Profile Footer */}
       <div className="p-3 border-t border-slate-800 bg-slate-950/90 flex items-center justify-between">
         <div className="flex items-center gap-2.5 truncate">
-          {renderAvatar(false)}
+          {renderAvatar(currentUser?.gender || 'male', false)}
           <div className="truncate">
-            <p className="text-xs font-bold text-white leading-none truncate">{currentUser?.name}</p>
+            <p className={`text-xs font-bold leading-none truncate ${currentUser?.gender === 'female' ? 'text-pink-400' : 'text-blue-400'}`}>
+              {currentUser?.name}
+            </p>
             <p className="text-[11px] text-emerald-400 leading-tight mt-1 flex items-center gap-1 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Anonymous Guest
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>{currentUser?.gender === 'female' ? '♀ Female Guest' : '♂ Male Guest'}</span>
             </p>
           </div>
         </div>
@@ -279,7 +291,21 @@ export default function ChatContainer() {
               )}
             </button>
 
-            <span className="text-base sm:text-xl font-bold text-white truncate">{chatTitle}</span>
+            {activeChat === 'public' ? (
+              <span className="text-base sm:text-xl font-bold text-white truncate"># General</span>
+            ) : (
+              <div className="flex items-center gap-2 truncate">
+                <span className="text-slate-400 font-bold text-base sm:text-xl">@</span>
+                <span className={`text-base sm:text-xl font-bold truncate ${activeUserObj?.gender === 'female' ? 'text-pink-400' : 'text-blue-400'}`}>
+                  {activeUserObj?.name || 'Direct Message'}
+                </span>
+                {activeUserObj?.gender && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${activeUserObj.gender === 'female' ? 'bg-pink-950/60 text-pink-300 border-pink-800/60' : 'bg-blue-950/60 text-blue-300 border-blue-800/60'}`}>
+                    {activeUserObj.gender === 'female' ? '♀ Female' : '♂ Male'}
+                  </span>
+                )}
+              </div>
+            )}
 
             {activeChat === 'public' ? (
               <span className="hidden sm:inline-block text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full font-medium shrink-0">
@@ -335,6 +361,10 @@ export default function ChatContainer() {
           ) : (
             filteredMessages.map((msg) => {
               const isSelf = msg.senderId === socket.id || msg.senderName === currentUser?.name;
+              const senderObj = onlineUsers.find((u) => u.id === msg.senderId || u.name === msg.senderName);
+              const senderGender = senderObj?.gender || msg.senderGender || (isSelf ? currentUser?.gender : 'male');
+              const isFemaleSender = senderGender === 'female';
+              const nameColor = isFemaleSender ? 'text-pink-400 font-bold' : 'text-blue-400 font-bold';
 
               return (
                 <div
@@ -342,7 +372,8 @@ export default function ChatContainer() {
                   className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} max-w-full`}
                 >
                   <div className="flex items-center gap-2 mb-1 px-1">
-                    <span className="text-xs font-semibold text-slate-300">{msg.senderName}</span>
+                    <span className="text-[10px] font-bold">{isFemaleSender ? '♀' : '♂'}</span>
+                    <span className={`text-xs ${nameColor}`}>{msg.senderName}</span>
                     <span className="text-[10px] text-slate-500">{formatTime(msg.timestamp)}</span>
                   </div>
                   <div
