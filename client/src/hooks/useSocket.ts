@@ -46,14 +46,14 @@ export const useSocket = () => {
     socket.on('receive_message', (message: Message) => {
       addMessage(message);
 
-      // Check if message is a private message sent to current user by someone else
+      // Check if message is a private message sent to current user by someoneelse
       const isPrivateMessage = message.recipientId !== 'public' && message.senderId !== socket.id;
 
       if (isPrivateMessage) {
         // Play notification sound
         playNotificationSound();
 
-        // Check if user is NOT currently in that chat
+        // Check if user is NOT currently in that chat 
         const currentActiveChat = useChatStore.getState().activeChat;
         if (currentActiveChat !== message.senderId) {
           markUnread(message.senderId);
